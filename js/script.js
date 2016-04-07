@@ -101,7 +101,7 @@ var oneStep = function(i, j, me) {
 	context.fill();
 }
 chess.onclick = function(e) {
-	if (over) {
+	if (over||!me) {
 		return;
 	}
 	var x = e.offsetX;
@@ -118,7 +118,7 @@ chess.onclick = function(e) {
 					myWin[k]++;
 					computerWin[k] = 6;
 					if (myWin[k] == 5) {
-						alert("You win!!");
+						alert("Black win!!");
 						over = true;
 					}
 				}
@@ -131,17 +131,112 @@ chess.onclick = function(e) {
 					myWin[k] = 6;
 					computerWin[k]++;
 					if (computerWin[k] == 5) {
-						alert("You lose!!");
+						alert("White win!!");
 						over = true;
 					}
 				}
 			}
 		}
 		me = !me;
-		//每下一次都和赢法数组做一次遍历。
-
-
-
-
+		//如果没有
+		if (!over) {
+			computerAI();
+			console.log(me);			
+		}
 	}
+}
+var computerAI = function() {
+	var myScore = [];
+	var computerScore = [];
+	//最高分数和坐标
+	var max = 0;
+	var u = 0,
+		v = 0;
+	for (var i = 0; i < 15; i++) {
+		myScore[i] = [];
+		computerScore[i] = [];
+		for (var j = 0; j < 15; j++) {
+			myScore[i][j] = 0;
+			computerScore[i][j] = 0;
+		}
+	}
+	for (var i = 0; i < 15; i++) {
+		for (var j = 0; j < 15; j++) {
+			if (chessBoard[i][j] === 0) {
+				for (var k = 0; k < count; k++) {
+					if (wins[i][j][k]) {
+						switch (myWin[k]) {
+							case 1:
+								myScore[i][j] += 200;
+								break;
+							case 2:
+								myScore[i][j] += 400;
+								break;
+							case 3:
+								myScore[i][j] += 2000;
+								break;
+							case 4:
+								myScore[i][j] += 10000;
+								break;
+							default:
+								break;
+						}
+						switch (computerWin[k]) {
+							case 1:
+								computerScore[i][j] += 220;
+								break;
+							case 2:
+								computerScore[i][j] += 420;
+								break;
+							case 3:
+								computerScore[i][j] += 2100;
+								break;
+							case 4:
+								computerScore[i][j] += 20000;
+								break;
+							default:
+								break;
+						}
+					}
+				}
+				if (myScore[i][j] > max) {
+					max = myScore[i][j];
+					u = i;
+					v = j;
+				} else if (myScore[i][j] == max) {
+					if (computerScore[i][j] > computerScore[u][v]) {
+						u = i;
+						v = j;
+					}
+				}
+				if (computerScore[i][j] > max) {
+					max = computerScore[i][j];
+					u = i;
+					v = j;
+				} else if (computerScore[i][j] == max) {
+					if (myScore[i][j] > myScore[u][v]) {
+						u = i;
+						v = j;
+					}
+				}
+			}
+		}
+	}
+	oneStep(u, v, false);
+	chessBoard[u][v] = 2;
+	for (var k = 0; k < count; k++) {
+		if (wins[u][v][k]) {
+			//myWin这里是个数组，如果存在一个k，使得mywin[k]=5,说明第k种赢法被实现
+			myWin[k] = 6;
+			computerWin[k]++;
+			if (computerWin[k] == 5) {
+				alert("White win!!");
+				over = true;
+			}
+		}
+	}
+	if (!over) {			
+			me = !me;
+		}
+
 }
